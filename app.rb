@@ -2,18 +2,18 @@ require_relative 'person'
 require_relative 'student'
 require_relative 'teacher'
 require_relative 'book'
-require_relative 'rental'
 require_relative 'classroom'
+require_relative 'rental'
 
 class App
   def initialize
     @books = []
-    @people = []
+    @persons = []
     @rentals = []
   end
 
   def start_console
-    puts 'welcome to school Library App!'
+    puts 'welcome to w100 school Library App!'
     until list_of_options
       input = gets.chomp
       if input == '7'
@@ -26,74 +26,72 @@ class App
   end
 
   def list_all_books
-    puts 'Please add a book to the library' if @books.empty?
-    @books.each { |book| puts "Title: #{book.title}, Author: #{book.author}" }
+    puts 'Database is empty! Add a book.' if @books.empty?
+    @books.each { |book| puts "[Book] Title: #{book.title}, Author: #{book.author}" }
   end
 
   def list_all_persons
-    puts 'Please add a person to the library' if @people.empty?
-    @people.each { |person| puts "[#{person.class.name}] Name: #{person.name}, ID: #{person.id}, Age: #{person.age}" }
+    puts 'Database is empty! Add a person.' if @persons.empty?
+    @persons.each do |person|
+      puts "[#{person.class.name}] Name: #{person.name}, Age: #{person.age}, id: #{person.id}"
+    end
   end
 
   def create_person
-    puts 'Do you want to create a student (1) or a teacher (2)? [Input the number]:'
+    print 'press 1 to create a student, press 2 to create a teacher : '
     option = gets.chomp
+
     case option
     when '1'
       create_student
     when '2'
       create_teacher
     else
-      puts 'Invalid option'
-      nil
+      puts 'Invalid input. Try again'
     end
   end
 
   def create_student
     puts 'create a new student'
-    puts 'Age:'
+    print 'Enter student age: '
     age = gets.chomp.to_i
-    puts 'Name:'
+    print 'Enter name: '
     name = gets.chomp
-    puts 'Has parent permission? [Y/N]:'
+    print 'Has parent permission? [Y/N]: '
     parent_permission = gets.chomp.downcase
-
     case parent_permission
-    when 'y'
-      student = Student.new(classroom: @classroom, age: age, name: name, parent_permission: true)
-      @people << student
-      puts 'Student created successfully'
     when 'n'
-      student = Student.new(classroom: @classroom, age: age, name: name, parent_permission: false)
-      @people << student
+      student = Student.new(age: age, name: name, parent_permission: false, classroom: @classroom)
+      @persons << student
       puts 'Student created successfully'
-    else
-      puts 'Invalid option'
-      nil
+    when 'y'
+      student = Student.new(age: age, name: name, parent_permission: true, classroom: @classroom)
+      @persons << student
+      puts 'Student created successfully'
     end
   end
 
   def create_teacher
     puts 'create a new teacher'
-    puts 'Age:'
+    print 'Enter teacher age: '
     age = gets.chomp.to_i
-    puts 'Name:'
-    name = gets.chomp
-    puts 'Specialization:'
+    print 'Enter teacher specialization: '
     specialization = gets.chomp
-    teacher = Teacher.new(age, name, specialization)
-    @people << teacher
+    print 'Enter teacher name: '
+    name = gets.chomp
+    teacher = Teacher.new(specialization, age, name)
+    @persons << teacher
     puts 'Teacher created successfully'
   end
 
   def create_book
     puts 'create a new book'
-    puts 'Title:'
+    print 'Enter title: '
     title = gets.chomp
-    puts 'Author:'
-    author = gets.chomp
+    print 'Enter author: '
+    author = gets
     book = Book.new(title, author)
-    @books << book
+    @books.push(book)
     puts "Book #{title} created successfully."
   end
 
@@ -104,7 +102,7 @@ class App
     return puts 'sorry wrong input' unless (0...@books.length).include?(book_id)
 
     puts 'select person from the list by its number'
-    tem_person = @people.select(&:can_use_services?)
+    tem_person = @persons.select(&:can_use_services?)
     tem_person.each_with_index do |person, index|
       puts "#{index} [#{person.class.name}] Name: #{person.name}, ID: #{person.id}, Age: #{person.age}"
     end
@@ -120,15 +118,17 @@ class App
     puts 'Rental created successfully'
   end
 
-  def list_rentals
-    puts 'ID of person:'
+  def list_all_rentals
+    puts 'To see rentals enter the person ID: '
     id = gets.chomp.to_i
-    puts 'Rentals:'
+
+    puts 'Rented Books: '
     @rentals.each do |rental|
       if rental.person.id == id
-        puts "Date: #{rental.date}, Book: #{rental.book.title} by #{rental.person.name}"
+        puts "Person: #{rental.person.name} Date: #{rental.date}, Book: '#{rental.book.title}' by #{rental.book.author}"
       else
-        puts 'No rentals found for that ID'
+        puts
+        puts 'No record were found for the given ID'
       end
     end
   end
